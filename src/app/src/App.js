@@ -1,23 +1,45 @@
+import { useState, useEffect } from 'react';
 import './App.css';
-import logo from './logo.svg';
-
-
+import TodoList from './components/TodoList'
 export function App() {
+
+  const [todos, setTodos] = useState([]);
+  const [newTodo, setNewTodo] = useState('');
+
+
+  useEffect(() => {
+    fetch('http://localhost:8000/todos/')
+      .then(response => response.json())
+      .then(data => setTodos(data));
+  }, []);
+
+
+  function handleSubmit(event) {
+    event.preventDefault();
+    fetch('http://localhost:8000/todos/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ description: newTodo })
+    })
+      .then(response => response.json())
+      .then(data => {
+        setTodos([...todos, data]);
+        setNewTodo('');
+      });
+  }
   return (
     <div className="App">
-      <div>
-        <h1>List of TODOs</h1>
-        <li>Learn Docker</li>
-        <li>Learn React</li>
-      </div>
+      <TodoList todos={todos} />
       <div>
         <h1>Create a ToDo</h1>
-        <form>
+        <form onSubmit={handleSubmit}>
           <div>
-            <label for="todo">ToDo: </label>
-            <input type="text" />
+            <label>ToDo: </label>
+            <input type="text" value={newTodo} onChange={event => setNewTodo(event.target.value)} />
           </div>
-          <div style={{"marginTop": "5px"}}>
+          <div style={{ "marginTop": "5px" }}>
             <button>Add ToDo!</button>
           </div>
         </form>
